@@ -19,11 +19,9 @@
 @dynamic unitFontSize;
 @dynamic progressLineWidth;
 @dynamic progressColor;
-@dynamic progressStrokeColor;
 @dynamic emptyLineWidth;
 @dynamic progressAngle;
 @dynamic emptyLineColor;
-@dynamic emptyLineStrokeColor;
 @dynamic emptyCapType;
 @dynamic progressCapType;
 @dynamic fontColor;
@@ -36,20 +34,23 @@
 @dynamic showValueString;
 @dynamic textOffset;
 @dynamic countdown;
+@dynamic shadowOffset;
+@dynamic shadowColor;
+@dynamic shadowRadius;
 
 #pragma mark - Drawing
 
 - (void) drawInContext:(CGContextRef) context{
     [super drawInContext:context];
-
+    
     UIGraphicsPushContext(context);
     
     CGSize size = CGRectIntegral(CGContextGetClipBoundingBox(context)).size;
     [self drawEmptyBar:size context:context];
     [self drawProgressBar:size context:context];
-  
+    
     if (self.showValueString){
-      [self drawText:size context:context];
+        [self drawText:size context:context];
     }
     
     UIGraphicsPopContext();
@@ -65,12 +66,12 @@
     
     CGPathAddArc(arc, NULL,
                  rectSize.width/2, rectSize.height/2,
-                 MIN(rectSize.width,rectSize.height)/2 - self.progressLineWidth,
-                 (self.progressAngle/100.f)*M_PI-((-self.progressRotationAngle/100.f)*2.f+0.5)*M_PI,
-                 -(self.progressAngle/100.f)*M_PI-((-self.progressRotationAngle/100.f)*2.f+0.5)*M_PI,
+                 MIN(rectSize.width,rectSize.height)/2 - self.emptyLineWidth/2 - self.shadowRadius/4,
+                 -0.5*M_PI,
+                 -2.5*M_PI,
                  YES);
     
-
+    
     CGPathRef strokedArc =
     CGPathCreateCopyByStrokingPath(arc, NULL,
                                    self.emptyLineWidth,
@@ -80,7 +81,7 @@
     
     
     CGContextAddPath(c, strokedArc);
-    CGContextSetStrokeColorWithColor(c, self.emptyLineStrokeColor.CGColor);
+    CGContextSetStrokeColorWithColor(c, [UIColor clearColor].CGColor);
     CGContextSetFillColorWithColor(c, self.emptyLineColor.CGColor);
     CGContextDrawPath(c, kCGPathFillStroke);
     
@@ -97,9 +98,9 @@
     
     CGPathAddArc(arc, NULL,
                  rectSize.width/2, rectSize.height/2,
-                 MIN(rectSize.width,rectSize.height)/2 - self.progressLineWidth,
-                 (self.progressAngle/100.f)*M_PI-((-self.progressRotationAngle/100.f)*2.f+0.5)*M_PI-(2.f*M_PI)*(self.progressAngle/100.f)*(100.f-100.f*self.value/self.maxValue)/100.f,
-                 -(self.progressAngle/100.f)*M_PI-((-self.progressRotationAngle/100.f)*2.f+0.5)*M_PI,
+                 MIN(rectSize.width,rectSize.height)/2 - self.progressLineWidth/2 - self.shadowRadius/4,
+                 -0.5*M_PI-(2.f*M_PI)*(self.progressAngle/100.f)*(100.f-100.f*self.value/self.maxValue)/100.f,
+                 -2.5*M_PI,
                  YES);
     
     CGPathRef strokedArc =
@@ -108,11 +109,13 @@
                                    (CGLineCap)self.progressCapType,
                                    kCGLineJoinMiter,
                                    10);
-
+    
     
     CGContextAddPath(c, strokedArc);
     CGContextSetFillColorWithColor(c, self.progressColor.CGColor);
-    CGContextSetStrokeColorWithColor(c, self.progressStrokeColor.CGColor);
+    CGContextSetStrokeColorWithColor(c, [UIColor clearColor].CGColor);
+    CGContextSetShadowWithColor(c, self.shadowOffset, self.shadowRadius,  self.shadowColor.CGColor );
+    CGContextSetBlendMode (c, kCGBlendModeNormal);
     CGContextDrawPath(c, kCGPathFillStroke);
     
     CGPathRelease(arc);
@@ -121,53 +124,55 @@
 
 - (void)drawText:(CGSize)rectSize context:(CGContextRef)c
 {
-  
-
-  NSMutableParagraphStyle* textStyle = NSMutableParagraphStyle.defaultParagraphStyle.mutableCopy;
-  textStyle.alignment = NSTextAlignmentLeft;
-  
-  CGFloat valueFontSize = self.valueFontSize == -1 ? rectSize.height/5 : self.valueFontSize;
-  
-  NSDictionary* valueFontAttributes = @{NSFontAttributeName: [UIFont fontWithName: self.valueFontName size:valueFontSize], NSForegroundColorAttributeName: self.fontColor, NSParagraphStyleAttributeName: textStyle};
-  
-  NSMutableAttributedString *text = [NSMutableAttributedString new];
-  
-  NSString *formatString = [NSString stringWithFormat:@"%%.%df", (int)self.decimalPlaces];
     
-  NSString* textToPresent;
-  if (self.countdown) {
-    textToPresent = [NSString stringWithFormat:formatString, (self.maxValue - self.value)];
-  } else {
-    textToPresent = [NSString stringWithFormat:formatString, self.value];
-  }
-  NSAttributedString* value = [[NSAttributedString alloc] initWithString:textToPresent
+    
+    NSMutableParagraphStyle* textStyle = NSMutableParagraphStyle.defaultParagraphStyle.mutableCopy;
+    textStyle.alignment = NSTextAlignmentCenter;
+    
+    CGFloat valueFontSize = self.valueFontSize == -1 ? rectSize.height/5 : self.valueFontSize;
+    
+    NSDictionary* valueFontAttributes = @{NSFontAttributeName: [UIFont fontWithName: self.valueFontName size:valueFontSize], NSForegroundColorAttributeName: self.fontColor, NSParagraphStyleAttributeName: textStyle};
+    
+    NSMutableAttributedString *text = [NSMutableAttributedString new];
+    
+    NSString *formatString = [NSString stringWithFormat:@"%%.%df", (int)self.decimalPlaces];
+    
+    NSString* textToPresent;
+    if (self.countdown) {
+        textToPresent = [NSString stringWithFormat:formatString, (self.maxValue - self.value)];
+    } else {
+        textToPresent = [NSString stringWithFormat:formatString, self.value];
+    }
+    NSAttributedString* value = [[NSAttributedString alloc] initWithString:textToPresent
                                                                 attributes:valueFontAttributes];
-  [text appendAttributedString:value];
-  
-  // set the decimal font size
-  NSUInteger decimalLocation = [text.string rangeOfString:@"."].location;
-  if (decimalLocation != NSNotFound){
-    NSDictionary* valueDecimalFontAttributes = @{NSFontAttributeName: [UIFont fontWithName: self.valueFontName size:self.valueDecimalFontSize == -1 ? valueFontSize : self.valueDecimalFontSize], NSForegroundColorAttributeName: self.fontColor, NSParagraphStyleAttributeName: textStyle};
-    NSRange decimalRange = NSMakeRange(decimalLocation, text.length - decimalLocation);
-    [text setAttributes:valueDecimalFontAttributes range:decimalRange];
-  }
-  
-  // ad the unit only if specified
-  if (self.showUnitString) {
-    NSDictionary* unitFontAttributes = @{NSFontAttributeName: [UIFont fontWithName: self.unitFontName size:self.unitFontSize == -1 ? rectSize.height/7 : self.unitFontSize], NSForegroundColorAttributeName: self.fontColor, NSParagraphStyleAttributeName: textStyle};
+    [text appendAttributedString:value];
     
-    NSAttributedString* unit =
-    [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@", self.unitString] attributes:unitFontAttributes];
-    [text appendAttributedString:unit];
-  }
-  
-  CGSize percentSize = [text size];
-  CGPoint textCenter = CGPointMake(
-    rectSize.width/2-percentSize.width/2 + self.textOffset.x,
-    rectSize.height/2-percentSize.height/2 + self.textOffset.y
-  );
-  
-  [text drawAtPoint:textCenter];
+    // set the decimal font size
+    NSUInteger decimalLocation = [text.string rangeOfString:@"."].location;
+    if (decimalLocation != NSNotFound){
+        NSDictionary* valueDecimalFontAttributes = @{NSFontAttributeName: [UIFont fontWithName: self.valueFontName size:self.valueDecimalFontSize == -1 ? valueFontSize : self.valueDecimalFontSize], NSForegroundColorAttributeName: self.fontColor, NSParagraphStyleAttributeName: textStyle};
+        NSRange decimalRange = NSMakeRange(decimalLocation, text.length - decimalLocation);
+        [text setAttributes:valueDecimalFontAttributes range:decimalRange];
+    }
+    
+    // ad the unit only if specified
+    if (self.showUnitString) {
+        NSDictionary* unitFontAttributes = @{NSFontAttributeName: [UIFont fontWithName: self.unitFontName size:self.unitFontSize == -1 ? rectSize.height/7 : self.unitFontSize], NSForegroundColorAttributeName: self.fontColor, NSParagraphStyleAttributeName: textStyle};
+        
+        NSAttributedString* unit =
+        [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@", self.unitString] attributes:unitFontAttributes];
+        [text appendAttributedString:unit];
+    }
+    
+    CGSize percentSize = [text size];
+    CGPoint textCenter = CGPointMake(
+                                     rectSize.width/2-percentSize.width/2 + self.textOffset.x,
+                                     rectSize.height/2-percentSize.height/2 + self.textOffset.y
+                                     );
+    
+    CGContextSetShadowWithColor(c, CGSizeMake(0, 0), 0,  [UIColor clearColor].CGColor );
+    
+    [text drawAtPoint:textCenter];
 }
 
 #pragma mark - Override methods to support animations
@@ -187,6 +192,7 @@
             anim.fromValue = [[self presentationLayer]
                               valueForKey:@"value"];
             anim.duration = self.animationDuration;
+            anim.delegate = self;
             return anim;
         }
     }
@@ -194,5 +200,16 @@
     return [super actionForKey:event];
 }
 
+- (void)animationDidStart:(CAAnimation *)anim {
+    [self setHidden:NO];
+}
+
+- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
+    if(self.value == self.maxValue && flag) {
+        self.animated = NO;
+        //        [self setHidden:YES];
+        //        self.value = 0;
+    }
+}
 
 @end

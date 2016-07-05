@@ -40,20 +40,19 @@
 -(void)initView:(CGRect)frame{
     //Without setting the content scale factor the layer would be pixelated
     [self setContentScaleFactor:[[UIScreen mainScreen] scale]];
-  
+    
     [self setUnitString:@"%"];
     [self setValue:0.f];
     [self setMaxValue:100.f];
     [self setProgressRotationAngle:0.f];
-    [self setProgressStrokeColor:[UIColor orangeColor]];
     [self setProgressColor:[UIColor orangeColor]];
-    [self setProgressCapType:kCGLineCapRound];
+    [self setProgressCapType:kCGLineCapButt];
     [self setEmptyLineColor:[UIColor lightGrayColor]];
-    [self setEmptyLineStrokeColor:[UIColor lightGrayColor]];
+    [self setEmptyLineWidth:3.f];
     [self setFontColor:[UIColor blackColor]];
     [self setEmptyLineWidth:1.f];
     [self setProgressLineWidth:14.f];
-    [self setProgressAngle:80.f];
+    [self setProgressAngle:100.f];
     [self setUnitFontSize:-1];
     [self setValueFontSize:-1];
     [self setValueDecimalFontSize:-1];
@@ -64,17 +63,21 @@
     [self setTextOffset:CGPointMake(0, 0)];
     [self setUnitFontName:@"HelveticaNeue-Thin"];
     [self setCountdown:NO];
+    [self setShadowColor: [UIColor clearColor]];
+    [self setShadowRadius:0];
+    [self setShadowOffset:CGSizeMake(0, 0)];
+    
 }
 
 #pragma mark - Getters and Setters for layer properties
 
 -(void)setShowValueString:(BOOL)showValueString{
-  self.progressLayer.showValueString = showValueString;
-  [self.layer setNeedsDisplay];
+    self.progressLayer.showValueString = showValueString;
+    [self.layer setNeedsDisplay];
 }
 
 -(BOOL)showValueString{
-  return self.progressLayer.showValueString;
+    return self.progressLayer.showValueString;
 }
 
 -(void)setValue:(CGFloat)value{
@@ -161,28 +164,12 @@
     return self.progressLayer.fontColor;
 }
 
--(void)setProgressStrokeColor:(UIColor*)color{
-    self.progressLayer.progressStrokeColor = color;
-}
-
--(UIColor*)progressStrokeColor{
-    return self.progressLayer.progressStrokeColor;
-}
-
 -(void)setEmptyLineColor:(UIColor *)emptyLineColor{
     self.progressLayer.emptyLineColor = emptyLineColor;
 }
 
 -(UIColor*)emptyLineColor{
     return self.progressLayer.emptyLineColor;
-}
-
--(void)setEmptyLineStrokeColor:(UIColor *)emptyLineStrokeColor{
-    self.progressLayer.emptyLineStrokeColor = emptyLineStrokeColor;
-}
-
--(UIColor*)emptyLineStrokeColor{
-    return self.progressLayer.emptyLineStrokeColor;
 }
 
 -(void)setProgressAngle:(CGFloat)progressAngle{
@@ -226,58 +213,82 @@
 }
 
 -(void)setDecimalPlaces:(NSInteger)decimalPlaces{
-  self.progressLayer.decimalPlaces = decimalPlaces;
+    self.progressLayer.decimalPlaces = decimalPlaces;
 }
 -(NSInteger)decimalPlaces{
-  return self.progressLayer.decimalPlaces;
+    return self.progressLayer.decimalPlaces;
 }
 
 -(void)setValueDecimalFontSize:(CGFloat)valueDecimalFontSize{
-  self.progressLayer.valueDecimalFontSize = valueDecimalFontSize;
+    self.progressLayer.valueDecimalFontSize = valueDecimalFontSize;
 }
 
 -(CGFloat)valueDecimalFontSize{
-  return self.progressLayer.valueDecimalFontSize;
+    return self.progressLayer.valueDecimalFontSize;
 }
 
 -(void)setUnitFontName:(NSString *)unitFontName{
-  self.progressLayer.unitFontName = unitFontName;
+    self.progressLayer.unitFontName = unitFontName;
 }
 
 -(NSString *)unitFontName{
-  return self.progressLayer.unitFontName;
+    return self.progressLayer.unitFontName;
 }
 
 -(void)setValueFontName:(NSString *)valueFontName{
-  self.progressLayer.valueFontName = valueFontName;
+    self.progressLayer.valueFontName = valueFontName;
 }
 
 -(NSString *)valueFontName{
-  return self.progressLayer.valueFontName;
+    return self.progressLayer.valueFontName;
 }
 
 -(void)setShowUnitString:(BOOL)showUnitString{
-  self.progressLayer.showUnitString = showUnitString;
+    self.progressLayer.showUnitString = showUnitString;
 }
 
 -(BOOL)showUnitString{
-  return self.progressLayer.showUnitString;
+    return self.progressLayer.showUnitString;
 }
 
 -(void)setTextOffset:(CGPoint)textOffset{
-  self.progressLayer.textOffset = textOffset;
+    self.progressLayer.textOffset = textOffset;
 }
 
 -(CGPoint)textOffset{
-  return self.progressLayer.textOffset;
+    return self.progressLayer.textOffset;
 }
 
 -(void)setCountdown:(BOOL)countdown {
-  self.progressLayer.countdown = countdown;
+    self.progressLayer.countdown = countdown;
 }
 
 -(BOOL)countdown {
-  return self.progressLayer.countdown;
+    return self.progressLayer.countdown;
+}
+
+- (CGSize)shadowOffset {
+    return self.progressLayer.shadowOffset;
+}
+
+- (void)setShadowOffset:(CGSize)shadowOffset {
+    self.progressLayer.shadowOffset = shadowOffset;
+}
+
+- (UIColor *)shadowColor {
+    return self.progressLayer.shadowColor;
+}
+
+- (void)setShadowColor:(UIColor *)shadowColor {
+    self.progressLayer.shadowColor = shadowColor;
+}
+
+- (CGFloat)shadowRadius {
+    return self.progressLayer.shadowRadius;
+}
+
+- (void)setShadowRadius:(CGFloat)shadowRadius {
+    self.progressLayer.shadowRadius = shadowRadius;
 }
 
 #pragma mark - CALayer
