@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Mati Bot All rights reserved.
 //
 
-@import UIKit;
+#import <UIKit/UIKit.h>;
 
 IB_DESIGNABLE
 /**
