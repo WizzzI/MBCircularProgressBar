@@ -66,7 +66,7 @@
     
     CGPathAddArc(arc, NULL,
                  rectSize.width/2, rectSize.height/2,
-                 MIN(rectSize.width,rectSize.height)/2 - self.emptyLineWidth/2 - self.shadowRadius/4,
+                 MIN(rectSize.width,rectSize.height)/2 - self.emptyLineWidth/2 - self.shadowRadius/2,
                  -0.5*M_PI,
                  -2.5*M_PI,
                  YES);
@@ -98,7 +98,7 @@
     
     CGPathAddArc(arc, NULL,
                  rectSize.width/2, rectSize.height/2,
-                 MIN(rectSize.width,rectSize.height)/2 - self.progressLineWidth/2 - self.shadowRadius/4,
+                 MIN(rectSize.width,rectSize.height)/2 - self.progressLineWidth/2 - self.shadowRadius/2,
                  -0.5*M_PI-(2.f*M_PI)*(self.progressAngle/100.f)*(100.f-100.f*self.value/self.maxValue)/100.f,
                  -2.5*M_PI,
                  YES);
